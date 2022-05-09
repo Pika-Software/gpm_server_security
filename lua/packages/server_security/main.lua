@@ -1,8 +1,9 @@
-if (CLIENT) then
+if (CLIENT) or game.SinglePlayer() then
     return
 end
 
 local packageName = "Server Security"
+local logger = GPM.Logger( packageName )
 
 do
 
@@ -24,8 +25,10 @@ do
     end
 
     function Punish( ply )
-        local steamid64, ip = ply:SteamID64(), ply:IPAddress()
-        local data = { steamid64, ply:Nick(), SysTime() + jail_time }
+        local nick, steamid64, ip = ply:Nick(), ply:SteamID64(), ply:IPAddress()
+        logger:info( "Player {1} ({2}) blocked!", nick, ply:SteamID() )
+
+        local data = { steamid64, nick, SysTime() + jail_time }
         jail_list[ steamid64 ] = data
         jail_list[ ip ] = data
 
@@ -72,7 +75,7 @@ do
         end
 
         return false, disconnect_string:format( steamid_data[2], steamid_data[1], string_FormattedTime( steamid_data[3] - SysTime(), time_format ) )
-    end)
+    end, HOOK_HIGH)
 
 end
 
@@ -100,28 +103,33 @@ end)
 /*
     Communication
 */
+hook.Add("PlayerSay", packageName, function( talker )
+    if talker:IsSecureChecked() then return end
+    return ""
+end, HOOK_HIGH)
+
 hook.Add("PreChatCommand", packageName, function( talker )
     if talker:IsSecureChecked() then return end
     return false
-end)
+end, HOOK_HIGH)
 
 hook.Add("PlayerCanSeePlayersChat", packageName, function( text, isTeam, listener, talker )
     if talker:IsSecureChecked() or listener:IsSecureChecked() then return end
     return false
-end)
+end, HOOK_HIGH)
 
 hook.Add("PlayerCanHearPlayersVoice", packageName, function( listener, talker )
     if talker:IsSecureChecked() or listener:IsSecureChecked() then return end
     return false
-end)
+end, HOOK_HIGH)
 
 /*
     Movement
 */
 hook.Add("FinishMove", packageName, function( ply )
     if ply:IsSecureChecked() then return end
-    return true
-end)
+    return ply:IsOnGround()
+end, HOOK_HIGH)
 
 /*
     Interactions
@@ -129,14 +137,108 @@ end)
 hook.Add("PlayerUse", packageName, function( ply )
     if ply:IsSecureChecked() then return end
     return false
-end)
+end, HOOK_HIGH)
 
 hook.Add("PlayerSpray", packageName, function( ply )
     if ply:IsSecureChecked() then return end
     return false
-end)
+end, HOOK_HIGH)
 
 hook.Add("PlayerShouldTaunt", packageName, function( ply )
     if ply:IsSecureChecked() then return end
     return false
+end, HOOK_HIGH)
+
+hook.Add("PlayerNoClip", packageName, function( ply )
+    if ply:IsSecureChecked() then return end
+    return false
+end, HOOK_HIGH)
+
+hook.Add("CanProperty", packageName, function( ply )
+    if ply:IsSecureChecked() then return end
+    return false
+end, HOOK_HIGH)
+
+hook.Add("CanTool", packageName, function( ply )
+    if ply:IsSecureChecked() then return end
+    return false
+end, HOOK_HIGH)
+
+hook.Add( "CanPlayerSuicide", packageName, function( ply )
+    if ply:IsSecureChecked() then return end
+    return false
+end, HOOK_HIGH)
+
+hook.Add("AllowPlayerPickup", packageName, function( ply )
+    if ply:IsSecureChecked() then return end
+    return false
+end, HOOK_HIGH)
+
+hook.Add("EntityTakeDamage", packageName, function( ent, dmg )
+    local att = dmg:GetAttacker()
+    if IsValid( att ) and att:IsPlayer() then
+        if att:IsSecureChecked() then return end
+        return true
+    end
 end)
+
+/*
+    Sandbox
+*/
+hook.Add("PlayerSpawnObject", packageName, function( ply )
+    if ply:IsSecureChecked() then return end
+    return false
+end, HOOK_HIGH)
+
+hook.Add("CanUndo", packageName, function( ply )
+    if ply:IsSecureChecked() then return end
+    return false
+end, HOOK_HIGH)
+
+hook.Add("PhysgunPickup", packageName, function( ply )
+    if ply:IsSecureChecked() then return end
+    return false
+end, HOOK_HIGH)
+
+hook.Add("GravGunPunt", packageName, function( ply )
+    if ply:IsSecureChecked() then return end
+    return false
+end, HOOK_HIGH)
+
+hook.Add("GravGunPickupAllowed", packageName, function( ply )
+    if ply:IsSecureChecked() then return end
+    return false
+end, HOOK_HIGH)
+
+/*
+    Admin Utils
+*/
+hook.Add("CAMI.PlayerHasAccess", packageName, function( ply )
+    if ply:IsSecureChecked() then return end
+    return false
+end, HOOK_HIGH)
+
+hook.Add("CAMI.SteamIDHasAccess", packageName, function( ply )
+    if ply:IsSecureChecked() then return end
+    return false
+end, HOOK_HIGH)
+
+/*
+    Network Protection
+*/
+do
+    local incoming = environment.saveFunc( "net.Incoming", net.Incoming )
+    function net.Incoming( len, ply )
+        if ply:IsSecureChecked() then return incoming( len, ply ) end
+    end
+end
+
+/*
+    Concommands
+*/
+do
+    local run = environment.saveFunc( "concommand.Run", concommand.Run )
+    function concommand.Run( ply, ... )
+        if ply:IsSecureChecked() then return run( ply, ... ) end
+    end
+end
