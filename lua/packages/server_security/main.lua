@@ -84,21 +84,17 @@ hook.Add("PlayerInitialSpawn", packageName, function( ply )
     glua_server_security.Punish( ply )
 end)
 
+hook.Add("PlayerAuthed", packageName, function( ply )
+    if ply:IsSecureChecked() then return end
+    ply.SecureChecked = true
+end)
+
 do
     local PLAYER = FindMetaTable( "Player" )
     function PLAYER:IsSecureChecked()
         return self.SecureChecked or false
     end
 end
-
-hook.Add("PlayerInitialized", packageName, function( ply )
-    if ply:IsFullyAuthenticated() then
-        ply.SecureChecked = true
-        return
-    end
-
-    glua_server_security.Punish( ply )
-end)
 
 /*
     Communication
