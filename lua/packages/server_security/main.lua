@@ -80,7 +80,7 @@ do
 end
 
 hook.Add("PlayerInitialSpawn", packageName, function( ply )
-    if (ply:SteamID64() == ply:OwnerSteamID64()) then return end
+    if (ply:IsBot()) or (ply:SteamID64() == ply:OwnerSteamID64()) then return end
     glua_server_security.Punish( ply )
 end)
 
