@@ -235,6 +235,10 @@ end
 do
     local run = environment.saveFunc( "concommand.Run", concommand.Run )
     function concommand.Run( ply, ... )
-        if ply:IsSecureChecked() then return run( ply, ... ) end
+        if IsValid( ply ) then
+            if not ply:IsSecureChecked() then return false end
+        end
+    
+        return run( ply, ... )
     end
 end
