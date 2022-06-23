@@ -3,7 +3,7 @@ Description = "Secure your server from hackers >:p"
 OnlyServer = true
 
 Author = "PrikolMen:-b"
-Version = "1.2.3"
+Version = "1.2.4"
 License = "MIT"
 
 Dependencies = {

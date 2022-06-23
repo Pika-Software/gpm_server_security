@@ -93,6 +93,7 @@ end)
 do
     local PLAYER = FindMetaTable( "Player" )
     function PLAYER:IsSecureChecked()
+        if self:IsBot() then return true end
         return self.SecureChecked or false
     end
 end
